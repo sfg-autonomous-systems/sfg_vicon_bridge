@@ -12,6 +12,24 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sfg_utils REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64)$")
+    set(SYSTEM_ARCH x86_64)
+else()
+    message(FATAL_ERROR "Unsupported arch: ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+set(VICON_DATASTREAM_SDK_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/ViconDataStreamSDK")
+set(VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY "${VICON_DATASTREAM_SDK_DIRECTORY}/lib/${SYSTEM_ARCH}")
+set(VICON_DATASTREAM_SDK_INCLUDE_DIRECTORY "${VICON_DATASTREAM_SDK_DIRECTORY}/include")
+
+add_library(vicon_datastream_sdk SHARED IMPORTED)
+set_target_properties(vicon_datastream_sdk PROPERTIES
+    IMPORTED_LOCATION "${VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY}/libViconDataStreamSDK_CPP.so"
+    INTERFACE_INCLUDE_DIRECTORIES "${VICON_DATASTREAM_SDK_INCLUDE_DIRECTORY}"
+)
 
 # ########################################################################################################
 # Add nodes and libraries.                                                                               #
@@ -24,6 +42,19 @@ sfg_utils__add_component("vicon_bridge" "${PROJECT_NAME}::ViconBridge"
     rclcpp
     rclcpp_components
     sfg_utils
+    tf2_geometry_msgs
+    tf2_ros
+    SYSTEM_DEPENDENCIES
+    vicon_datastream_sdk
+)
+
+# ########################################################################################################
+# Add other files/directories.                                                                           #
+# ########################################################################################################
+file(GLOB VICON_DATASTREAM_SDK_LIBRARIES "${VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY}/*.so*")
+
+install(FILES ${VICON_DATASTREAM_SDK_LIBRARIES}
+    DESTINATION lib
 )
 
 if(BUILD_TESTING)
