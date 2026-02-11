@@ -21,14 +21,14 @@ else()
     message(FATAL_ERROR "Unsupported arch: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-set(VICON_DATASTREAM_SDK_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/ViconDataStreamSDK")
-set(VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY "${VICON_DATASTREAM_SDK_DIRECTORY}/lib/${SYSTEM_ARCH}")
-set(VICON_DATASTREAM_SDK_INCLUDE_DIRECTORY "${VICON_DATASTREAM_SDK_DIRECTORY}/include")
+set(VICON_DATASTREAM_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/ViconDataStreamSDK")
+set(VICON_DATASTREAM_SDK_LIBRARIES_DIR "${VICON_DATASTREAM_SDK_DIR}/lib/${SYSTEM_ARCH}")
+set(VICON_DATASTREAM_SDK_INCLUDE_DIR "${VICON_DATASTREAM_SDK_DIR}/include")
 
 add_library(vicon_datastream_sdk SHARED IMPORTED)
 set_target_properties(vicon_datastream_sdk PROPERTIES
-    IMPORTED_LOCATION "${VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY}/libViconDataStreamSDK_CPP.so"
-    INTERFACE_INCLUDE_DIRECTORIES "${VICON_DATASTREAM_SDK_INCLUDE_DIRECTORY}"
+    IMPORTED_LOCATION "${VICON_DATASTREAM_SDK_LIBRARIES_DIR}/libViconDataStreamSDK_CPP.so"
+    INTERFACE_INCLUDE_DIRECTORIES "${VICON_DATASTREAM_SDK_INCLUDE_DIR}"
 )
 
 # ########################################################################################################
@@ -51,7 +51,7 @@ sfg_utils__add_component("vicon_bridge" "${PROJECT_NAME}::ViconBridge"
 # ########################################################################################################
 # Add other files/directories.                                                                           #
 # ########################################################################################################
-file(GLOB VICON_DATASTREAM_SDK_LIBRARIES "${VICON_DATASTREAM_SDK_LIBRARIES_DIRECTORY}/*.so*")
+file(GLOB VICON_DATASTREAM_SDK_LIBRARIES "${VICON_DATASTREAM_SDK_LIBRARIES_DIR}/*.so*")
 
 install(FILES ${VICON_DATASTREAM_SDK_LIBRARIES}
     DESTINATION lib
