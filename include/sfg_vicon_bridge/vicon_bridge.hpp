@@ -13,6 +13,10 @@ namespace sfg_vicon_bridge
     {
     public:
         ViconBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+        ViconBridge(const ViconBridge &) = delete;
+        ViconBridge &operator=(const ViconBridge &) = delete;
+        ViconBridge(ViconBridge &&) = delete;
+        ViconBridge &operator=(ViconBridge &&) = delete;
         ~ViconBridge();
 
     private:
