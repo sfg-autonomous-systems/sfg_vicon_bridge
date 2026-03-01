@@ -65,15 +65,15 @@ namespace sfg_vicon_bridge
     {
         const std::string &object_to_frame_id_mapping_prefix = "object_to_frame_id_mapping";
 
-        RCLCPP_INFO(get_logger(), "Loading object to frame id mapping with mappings:");
+        RCLCPP_INFO(get_logger(), "Loading object to frame ID mapping with mappings:");
         std::set<std::string> objects;
 
         for (const auto &parameter_name : list_parameters({object_to_frame_id_mapping_prefix}, 3).names)
         {
             // Parameter name is the full name including the prefix. We need to extract the object name by
-            // removing the object to frame id mapping prefix (and the dot) and...
+            // removing the object to frame ID mapping prefix (and the dot) and...
             auto object = parameter_name.substr(object_to_frame_id_mapping_prefix.size() + 1);
-            // ...removing any sub-parameter suffix (e.g. ".tracked_frame_id" or ".base_frame_id").
+            // ...removing any sub-parameter suffix (e.g. ".marker_frame_id" or ".base_frame_id").
             object = object.substr(0, object.find('.'));
             objects.insert(object);
         }
@@ -83,11 +83,11 @@ namespace sfg_vicon_bridge
         for (const auto &object : objects)
         {
             auto parameter_prefix = object_to_frame_id_mapping_prefix + "." + object;
-            auto tracked_frame_id = get_parameter_or(parameter_prefix + ".tracked_frame_id", object);
-            auto base_frame_id = get_parameter_or(parameter_prefix + ".base_frame_id", tracked_frame_id);
-            object_to_frame_id_mapping[object] = {tracked_frame_id, base_frame_id};
+            auto marker_frame_id = get_parameter_or(parameter_prefix + ".marker_frame_id", object);
+            auto base_frame_id = get_parameter_or(parameter_prefix + ".base_frame_id", marker_frame_id);
+            object_to_frame_id_mapping[object] = {marker_frame_id, base_frame_id};
 
-            RCLCPP_INFO(get_logger(), "  %s -> { tracked frame id: '%s', base frame id: '%s' }", object.c_str(), tracked_frame_id.c_str(), base_frame_id.c_str());
+            RCLCPP_INFO(get_logger(), "  %s -> { marker frame ID: '%s', base frame ID: '%s' }", object.c_str(), marker_frame_id.c_str(), base_frame_id.c_str());
         }
         return object_to_frame_id_mapping;
     }
@@ -165,28 +165,29 @@ namespace sfg_vicon_bridge
             {
                 continue;
             }
+            const auto millimeter_to_meter = 1.0 / 1000.0;
 
-            tf2::Transform global_to_tracked_frame_transform = tf2::Transform(
+            auto global_to_tracked_frame_transform = tf2::Transform(
                 tf2::Quaternion(segment_rotation.Rotation[0], segment_rotation.Rotation[1], segment_rotation.Rotation[2], segment_rotation.Rotation[3]),
-                tf2::Vector3(segment_translation.Translation[0] / 1000.0, segment_translation.Translation[1] / 1000.0, segment_translation.Translation[2] / 1000.0));
+                tf2::Vector3(segment_translation.Translation[0], segment_translation.Translation[1], segment_translation.Translation[2]) * millimeter_to_meter);
 
             auto frame_id_mapping = get_frame_id_mapping(subject_name);
             tf2::Stamped<tf2::Transform> tracked_to_base_frame_transform;
 
             try
             {
-                tf2::fromMsg(m_transform_buffer->lookupTransform(frame_id_mapping.tracked_frame_id, frame_id_mapping.base_frame_id, stamp), tracked_to_base_frame_transform);
+                tf2::fromMsg(m_transform_buffer->lookupTransform(frame_id_mapping.m_marker_frame_id, frame_id_mapping.m_base_frame_id, stamp), tracked_to_base_frame_transform);
             }
             catch (const tf2::TransformException &exception)
             {
-                RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "Failed to look up transform from tracked frame '%s' to base frame '%s': %s", frame_id_mapping.tracked_frame_id.c_str(), frame_id_mapping.base_frame_id.c_str(), exception.what());
+                RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "Failed to look up transform from marker frame ID '%s' to base frame ID '%s': %s", frame_id_mapping.m_marker_frame_id.c_str(), frame_id_mapping.m_base_frame_id.c_str(), exception.what());
                 continue;
             }
 
             geometry_msgs::msg::TransformStamped msg;
             msg.header.stamp = stamp;
             msg.header.frame_id = m_global_frame_id;
-            msg.child_frame_id = frame_id_mapping.base_frame_id;
+            msg.child_frame_id = frame_id_mapping.m_base_frame_id;
             msg.transform = tf2::toMsg(global_to_tracked_frame_transform * tracked_to_base_frame_transform);
             m_tf_broadcaster.sendTransform(msg);
         }

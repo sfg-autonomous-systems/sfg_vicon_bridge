@@ -22,8 +22,9 @@ namespace sfg_vicon_bridge
     private:
         struct FrameIdMapping
         {
-            std::string tracked_frame_id;
-            std::string base_frame_id;
+        public:
+            std::string m_marker_frame_id;
+            std::string m_base_frame_id;
         };
 
         std::unordered_map<std::string, FrameIdMapping> load_object_to_frame_id_mapping();
