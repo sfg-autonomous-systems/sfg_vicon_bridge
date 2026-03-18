@@ -95,11 +95,20 @@ namespace sfg_vicon_bridge
     void ViconBridge::initialize_client()
     {
         RCLCPP_INFO(get_logger(), "Connecting to Vicon server at %s...", m_hostname.c_str());
-        m_client.SetConnectionTimeout(1000);
 
         while (!m_done && rclcpp::ok() && !m_client.IsConnected().Connected)
         {
             m_client.Connect(m_hostname);
+
+            if (m_client.IsConnected().Connected)
+            {
+                break;
+            }
+
+            if (!rclcpp::sleep_for(std::chrono::seconds(1)))
+            {
+                return;
+            }
         }
 
         if (m_done || !rclcpp::ok())
@@ -130,7 +139,10 @@ namespace sfg_vicon_bridge
         {
             if (m_client.GetFrame().Result == ViconDataStreamSDK::CPP::Result::NoFrame)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                if (!rclcpp::sleep_for(std::chrono::milliseconds(10)))
+                {
+                    break;
+                }
                 continue;
             }
 
