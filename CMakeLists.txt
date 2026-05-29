@@ -38,13 +38,12 @@ sfg_utils__add_component("vicon_bridge" "${PROJECT_NAME}::ViconBridge"
     SOURCES
     "src/vicon_bridge_component.cpp"
     "src/vicon_bridge.cpp"
-    AMENT_DEPENDENCIES
-    rclcpp
-    rclcpp_components
-    sfg_utils
-    tf2_geometry_msgs
-    tf2_ros
-    SYSTEM_DEPENDENCIES
+    DEPENDENCIES
+    rclcpp::rclcpp
+    rclcpp_components::component
+    sfg_utils::sfg_utils
+    ${tf2_geometry_msgs_TARGETS}
+    tf2_ros::tf2_ros
     vicon_datastream_sdk
 )
 
