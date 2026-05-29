@@ -39,12 +39,17 @@ sfg_utils__add_component("vicon_bridge" "${PROJECT_NAME}::ViconBridge"
     "src/vicon_bridge_component.cpp"
     "src/vicon_bridge.cpp"
     DEPENDENCIES
+    PUBLIC
     rclcpp::rclcpp
+    tf2_ros::tf2_ros
+    vicon_datastream_sdk
+    PRIVATE
     rclcpp_components::component
     sfg_utils::sfg_utils
     ${tf2_geometry_msgs_TARGETS}
-    tf2_ros::tf2_ros
-    vicon_datastream_sdk
+    EXPORT_DEPENDENCIES
+    rclcpp
+    tf2_ros
 )
 
 # ########################################################################################################
