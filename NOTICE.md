@@ -5,7 +5,7 @@ This software incorporates third-party software components. The following sectio
 ## [Boost C++ Libraries](https://www.boost.org/)
 
 * **Author:** Boost Developers
-* **License:** BSL-1.0
+* **License:** Boost Software License
 * **Version:** 1.75.0
 * **Affected Directories/Files:**
     * [`libboost_chrono-mt-x64.so.1.75.0`](third_party/ViconDataStreamSDK/lib/x86_64/libboost_chrono-mt-x64.so.1.75.0)
