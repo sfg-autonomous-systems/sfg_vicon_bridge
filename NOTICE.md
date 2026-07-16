@@ -24,7 +24,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Vicon DataStream SDK
 
 * **Author/Provider:** Vicon Motion Systems Ltd.
-* **License:** [Insert Exact Vicon License Type/Name Here - e.g., Vicon End User License Agreement]
+* **License:** MIT License
 * **Affected Directories/Files:**
     * [ViconDataStreamSDK/](third_party/ViconDataStreamSDK/include/ViconDataStreamSDK)
     * [libViconDataStreamSDK_CPP.so](third_party/ViconDataStreamSDK/lib/x86_64/libViconDataStreamSDK_CPP.so)
