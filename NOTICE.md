@@ -5,6 +5,7 @@ This repository incorporates third-party software components. The following sect
 ## [Boost C++ Libraries](https://www.boost.org/)
 
 * **Author:** Boost Developers
+* **License:** BSL-1.0
 * **Version:** 1.75.0
 * **Affected Directories/Files:**
     * [`libboost_chrono-mt-x64.so.1.75.0`](third_party/ViconDataStreamSDK/lib/x86_64/libboost_chrono-mt-x64.so.1.75.0)
@@ -23,6 +24,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## [Vicon DataStream SDK](https://www.vicon.com/software/datastream-sdk/)
 
 * **Author:** Vicon Motion Systems Ltd.
+* **LICENSE:** MIT
 * **Version:** 1.12.0
 * **Affected Directories/Files:**
     * [ViconDataStreamSDK/](third_party/ViconDataStreamSDK/include/ViconDataStreamSDK)
