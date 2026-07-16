@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>Uses Vicon's DataStream SDK to publish tracked objects inside ROS2.</description>
   <maintainer email="constantin.blessing@hs-esslingen.de">Constantin Blessing</maintainer>
+  <license>Boost Software License</license>
   <license>MIT</license>
 
   <depend>rclcpp</depend>
