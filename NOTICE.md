@@ -20,9 +20,10 @@ The copyright notices in the Software and this entire statement, including the a
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-## Vicon DataStream SDK
+## [Vicon DataStream SDK](https://www.vicon.com/software/datastream-sdk/)
 
-* **Author/Provider:** Vicon Motion Systems Ltd.
+* **Author:** Vicon Motion Systems Ltd.
+* **Version:** 1.12.0
 * **Affected Directories/Files:**
     * [ViconDataStreamSDK/](third_party/ViconDataStreamSDK/include/ViconDataStreamSDK)
     * [libViconDataStreamSDK_CPP.so](third_party/ViconDataStreamSDK/lib/x86_64/libViconDataStreamSDK_CPP.so)
