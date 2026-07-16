@@ -1,6 +1,6 @@
 # Third-Party Software Notices
 
-This repository incorporates third-party software components. The following sections provide attribution, copyright notices, and license terms for these components.
+This software incorporates third-party software components. The following sections provide attribution, copyright notices, and license terms for these components.
 
 ## [Boost C++ Libraries](https://www.boost.org/)
 
