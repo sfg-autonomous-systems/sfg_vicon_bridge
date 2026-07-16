@@ -22,7 +22,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## [Vicon DataStream SDK](https://www.vicon.com/software/datastream-sdk/)
 
-* **Author/Provider:** Vicon Motion Systems Ltd.
+* **Author:** Vicon Motion Systems Ltd.
 * **Version:** 1.12.0
 * **Affected Directories/Files:**
     * [ViconDataStreamSDK/](third_party/ViconDataStreamSDK/include/ViconDataStreamSDK)
