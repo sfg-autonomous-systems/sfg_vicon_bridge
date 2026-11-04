@@ -24,7 +24,7 @@ namespace sfg_vicon_bridge
         {
         public:
             std::string m_marker_frame_id;
-            std::string m_base_frame_id;
+            std::string m_base_link_frame_id;
         };
 
         std::unordered_map<std::string, FrameIdMapping> load_object_to_frame_id_mapping();
@@ -34,9 +34,9 @@ namespace sfg_vicon_bridge
         FrameIdMapping get_frame_id_mapping(const std::string &object_name) const;
 
         // ROS parameters
-        std::string m_hostname;
+        std::string m_server_address;
         std::uint32_t m_buffer_size;
-        std::string m_global_frame_id;
+        std::string m_map_frame_id;
 
         ViconDataStreamSDK::CPP::Client m_client;
         std::thread m_client_polling_thread;
