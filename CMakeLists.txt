@@ -15,21 +15,14 @@ find_package(sfg_utils REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|amd64)$")
-    set(SYSTEM_ARCH x86_64)
-else()
-    message(FATAL_ERROR "Unsupported arch: ${CMAKE_SYSTEM_PROCESSOR}")
-endif()
+include(FetchContent)
 
-set(VICON_DATASTREAM_SDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/ViconDataStreamSDK")
-set(VICON_DATASTREAM_SDK_LIBRARIES_DIR "${VICON_DATASTREAM_SDK_DIR}/lib/${SYSTEM_ARCH}")
-set(VICON_DATASTREAM_SDK_INCLUDE_DIR "${VICON_DATASTREAM_SDK_DIR}/include")
-
-add_library(vicon_datastream_sdk SHARED IMPORTED)
-set_target_properties(vicon_datastream_sdk PROPERTIES
-    IMPORTED_LOCATION "${VICON_DATASTREAM_SDK_LIBRARIES_DIR}/libViconDataStreamSDK_CPP.so"
-    INTERFACE_INCLUDE_DIRECTORIES "${VICON_DATASTREAM_SDK_INCLUDE_DIR}"
+FetchContent_Declare(
+    vicon_datastream_sdk
+    GIT_REPOSITORY https://github.com/sfg-autonomous-systems/sfg_vicon_datastream_sdk.git
+    GIT_TAG 5aa21b4f493b88349b7c76e3761799d5b0a6223d
 )
+FetchContent_MakeAvailable(vicon_datastream_sdk)
 
 # ########################################################################################################
 # Add nodes and libraries.                                                                               #
@@ -45,16 +38,8 @@ sfg_utils__add_component("vicon_bridge" "${PROJECT_NAME}::ViconBridge"
     tf2_geometry_msgs
     tf2_ros
     SYSTEM_DEPENDENCIES
-    vicon_datastream_sdk
-)
-
-# ########################################################################################################
-# Add other files/directories.                                                                           #
-# ########################################################################################################
-file(GLOB VICON_DATASTREAM_SDK_LIBRARIES "${VICON_DATASTREAM_SDK_LIBRARIES_DIR}/*.so*")
-
-install(FILES ${VICON_DATASTREAM_SDK_LIBRARIES}
-    DESTINATION lib
+    PRIVATE
+    ViconDataStreamSDK_CPP
 )
 
 if(BUILD_TESTING)
