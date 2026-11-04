@@ -1,11 +1,11 @@
 #pragma once
 
+#include <DataStreamClient.h>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/static_transform_broadcaster.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 #include <tf2_ros/transform_listener.h>
-#include <ViconDataStreamSDK/DataStreamClient.h>
 
 namespace sfg_vicon_bridge
 {
