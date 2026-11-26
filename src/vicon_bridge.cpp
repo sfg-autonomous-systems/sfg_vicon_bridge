@@ -1,27 +1,33 @@
 #include "sfg_vicon_bridge/vicon_bridge.hpp"
 
+#include <DataStreamClient.h>
+#include <set>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "sfg_utils/ros_utils.hpp"
 
 namespace sfg_vicon_bridge
 {
-    template <typename ResponseType>
-    const ResponseType &throw_on_failure(const ResponseType &response, const std::string &error)
+    namespace
     {
-        if (response.Result != ViconDataStreamSDK::CPP::Result::Success)
+        template <typename ResponseType>
+        const ResponseType &throw_on_failure(const ResponseType &response, const std::string &error)
         {
-            throw std::runtime_error(error);
+            if (response.Result != ViconDataStreamSDK::CPP::Result::Success)
+            {
+                throw std::runtime_error(error);
+            }
+            return response;
         }
-        return response;
     }
 
     ViconBridge::ViconBridge(const rclcpp::NodeOptions &options)
         : Node("vicon_bridge", rclcpp::NodeOptions(options).allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true)),
+          m_client(std::make_unique<ViconDataStreamSDK::CPP::Client>()),
           m_done(false),
           m_transform_buffer(std::make_unique<tf2_ros::Buffer>(get_clock())),
           m_transform_listener(std::make_unique<tf2_ros::TransformListener>(*m_transform_buffer)),
-          m_tf_broadcaster(this)
+          m_tf_broadcaster(std::make_unique<tf2_ros::TransformBroadcaster>(this))
     {
         // Declare and retrieve ROS parameters.
         m_server_address = sfg_utils::ros_utils::declare_parameter_if_not_declared(
@@ -96,11 +102,11 @@ namespace sfg_vicon_bridge
     {
         RCLCPP_INFO(get_logger(), "Connecting to Vicon server at %s...", m_server_address.c_str());
 
-        while (!m_done && rclcpp::ok() && !m_client.IsConnected().Connected)
+        while (!m_done && rclcpp::ok() && !m_client->IsConnected().Connected)
         {
-            m_client.Connect(m_server_address);
+            m_client->Connect(m_server_address);
 
-            if (m_client.IsConnected().Connected)
+            if (m_client->IsConnected().Connected)
             {
                 break;
             }
@@ -118,9 +124,9 @@ namespace sfg_vicon_bridge
 
         RCLCPP_INFO(get_logger(), "Connected to Vicon server at %s.", m_server_address.c_str());
 
-        m_client.SetBufferSize(m_buffer_size);
-        throw_on_failure(m_client.EnableSegmentData(), "Failed to enable segment data from Vicon server.");
-        throw_on_failure(m_client.SetStreamMode(ViconDataStreamSDK::CPP::StreamMode::ServerPush), "Failed to set Vicon stream mode.");
+        m_client->SetBufferSize(m_buffer_size);
+        throw_on_failure(m_client->EnableSegmentData(), "Failed to enable segment data from Vicon server.");
+        throw_on_failure(m_client->SetStreamMode(ViconDataStreamSDK::CPP::StreamMode::ServerPush), "Failed to set Vicon stream mode.");
     }
 
     void ViconBridge::poll_client()
@@ -135,10 +141,14 @@ namespace sfg_vicon_bridge
             return;
         }
 
-        while (!m_done && rclcpp::ok())
+        while (!m_done && rclcpp::ok() && m_client->IsConnected().Connected)
         {
-            if (m_client.GetFrame().Result == ViconDataStreamSDK::CPP::Result::NoFrame)
+            const auto frame_result = m_client->GetFrame().Result;
+
+            if (frame_result != ViconDataStreamSDK::CPP::Result::Success)
             {
+                RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "Failed to retrieve a Vicon frame.");
+
                 if (!rclcpp::sleep_for(std::chrono::milliseconds(10)))
                 {
                     break;
@@ -158,7 +168,7 @@ namespace sfg_vicon_bridge
 
         try
         {
-            throw_on_failure(m_client.Disconnect(), "Failed to disconnect from Vicon server.");
+            throw_on_failure(m_client->Disconnect(), "Failed to disconnect from Vicon server.");
         }
         catch (const std::exception &exception)
         {
@@ -168,17 +178,17 @@ namespace sfg_vicon_bridge
 
     void ViconBridge::process_frame()
     {
-        auto stamp = now() - rclcpp::Duration::from_seconds(m_client.GetLatencyTotal().Total);
-        auto subject_count = throw_on_failure(m_client.GetSubjectCount(), "Failed to get subject count from Vicon server.").SubjectCount;
+        auto stamp = now() - rclcpp::Duration::from_seconds(m_client->GetLatencyTotal().Total);
+        auto subject_count = throw_on_failure(m_client->GetSubjectCount(), "Failed to get subject count from Vicon server.").SubjectCount;
 
         for (size_t subject_index = 0; subject_index < subject_count; subject_index++)
         {
             // Vicon's DataStream SDK supports subjects having multiple segments. But since we are exclusively using Vicon Tracker as the server which
             // does not seem to support multi-segment subjects (i.e. tracked objects with multiple segments), we only retrieve the root segment for each subject.
-            auto subject_name = throw_on_failure(m_client.GetSubjectName(subject_index), "Failed to get subject name from Vicon server.").SubjectName;
-            auto segment_name = throw_on_failure(m_client.GetSubjectRootSegmentName(subject_name), "Failed to get subject root segment name from Vicon server.").SegmentName;
-            auto segment_translation = throw_on_failure(m_client.GetSegmentGlobalTranslation(subject_name, segment_name), "Failed to get root segment global translation from Vicon server.");
-            auto segment_rotation = throw_on_failure(m_client.GetSegmentGlobalRotationQuaternion(subject_name, segment_name), "Failed to get root segment global rotation from Vicon server.");
+            auto subject_name = throw_on_failure(m_client->GetSubjectName(subject_index), "Failed to get subject name from Vicon server.").SubjectName;
+            auto segment_name = throw_on_failure(m_client->GetSubjectRootSegmentName(subject_name), "Failed to get subject root segment name from Vicon server.").SegmentName;
+            auto segment_translation = throw_on_failure(m_client->GetSegmentGlobalTranslation(subject_name, segment_name), "Failed to get root segment global translation from Vicon server.");
+            auto segment_rotation = throw_on_failure(m_client->GetSegmentGlobalRotationQuaternion(subject_name, segment_name), "Failed to get root segment global rotation from Vicon server.");
 
             if (segment_translation.Occluded || segment_rotation.Occluded)
             {
@@ -208,7 +218,7 @@ namespace sfg_vicon_bridge
             msg.header.frame_id = m_map_frame_id;
             msg.child_frame_id = frame_id_mapping.m_base_link_frame_id;
             msg.transform = tf2::toMsg(map_to_marker_transform * marker_to_base_link_transform);
-            m_tf_broadcaster.sendTransform(msg);
+            m_tf_broadcaster->sendTransform(msg);
         }
     }
 

@@ -1,15 +1,25 @@
 #pragma once
 
-#include <DataStreamClient.h>
+#include <atomic>
+#include <cstdint>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <string>
 #include <tf2_ros/buffer.h>
-#include <tf2_ros/static_transform_broadcaster.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 #include <tf2_ros/transform_listener.h>
+#include <thread>
+#include <unordered_map>
+
+// Forward declare the client so we don't need ViconDataStreamSDK_CPP as a public dependency.
+namespace ViconDataStreamSDK::CPP
+{
+    class Client;
+}
 
 namespace sfg_vicon_bridge
 {
-    class ViconBridge : public rclcpp::Node
+    class ViconBridge final : public rclcpp::Node
     {
     public:
         ViconBridge(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
@@ -17,7 +27,7 @@ namespace sfg_vicon_bridge
         ViconBridge &operator=(const ViconBridge &) = delete;
         ViconBridge(ViconBridge &&) = delete;
         ViconBridge &operator=(ViconBridge &&) = delete;
-        ~ViconBridge();
+        ~ViconBridge() override;
 
     private:
         struct FrameIdMapping
@@ -38,13 +48,13 @@ namespace sfg_vicon_bridge
         std::uint32_t m_buffer_size;
         std::string m_map_frame_id;
 
-        ViconDataStreamSDK::CPP::Client m_client;
+        std::unique_ptr<ViconDataStreamSDK::CPP::Client> m_client;
         std::thread m_client_polling_thread;
         std::atomic<bool> m_done;
         std::unordered_map<std::string, FrameIdMapping> m_object_to_frame_id_mapping;
 
         std::unique_ptr<tf2_ros::Buffer> m_transform_buffer;
         std::unique_ptr<tf2_ros::TransformListener> m_transform_listener;
-        tf2_ros::TransformBroadcaster m_tf_broadcaster;
+        std::unique_ptr<tf2_ros::TransformBroadcaster> m_tf_broadcaster;
     };
 }
